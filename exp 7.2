@@ -1,0 +1,113 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class ProductCRUD {
+    static final String URL = "jdbc:mysql://localhost:3306/yourDatabase";
+    static final String USER = "root";
+    static final String PASSWORD = "";
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+        do {
+            System.out.println("\n1. Insert Product");
+            System.out.println("2. Read Products");
+            System.out.println("3. Update Product");
+            System.out.println("4. Delete Product");
+            System.out.println("5. Exit");
+            System.out.print("Enter choice: ");
+            choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1: insertProduct(); break;
+                case 2: readProducts(); break;
+                case 3: updateProduct(); break;
+                case 4: deleteProduct(); break;
+                case 5: System.out.println("Exiting..."); break;
+                default: System.out.println("Invalid choice!");
+            }
+        } while (choice != 5);
+
+        scanner.close();
+    }
+
+    public static void insertProduct() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = con.prepareStatement("INSERT INTO Product (ProductID, ProductName, Price, Quantity) VALUES (?, ?, ?, ?)")) {
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter ProductID: ");
+            int id = scanner.nextInt();
+            scanner.nextLine(); 
+            System.out.print("Enter Product Name: ");
+            String name = scanner.nextLine();
+            System.out.print("Enter Price: ");
+            double price = scanner.nextDouble();
+            System.out.print("Enter Quantity: ");
+            int quantity = scanner.nextInt();
+
+            ps.setInt(1, id);
+            ps.setString(2, name);
+            ps.setDouble(3, price);
+            ps.setInt(4, quantity);
+            ps.executeUpdate();
+            System.out.println("Product Inserted Successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void readProducts() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM Product")) {
+
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("ProductID") +
+                                   ", Name: " + rs.getString("ProductName") +
+                                   ", Price: " + rs.getDouble("Price") +
+                                   ", Quantity: " + rs.getInt("Quantity"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateProduct() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = con.prepareStatement("UPDATE Product SET Price = ? WHERE ProductID = ?")) {
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter Product ID to update: ");
+            int id = scanner.nextInt();
+            System.out.print("Enter new Price: ");
+            double price = scanner.nextDouble();
+
+            ps.setDouble(1, price);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            System.out.println("Product Updated Successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteProduct() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = con.prepareStatement("DELETE FROM Product WHERE ProductID = ?")) {
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter Product ID to delete: ");
+            int id = scanner.nextInt();
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            System.out.println("Product Deleted Successfully.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
